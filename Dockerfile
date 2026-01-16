@@ -8,5 +8,5 @@ WORKDIR /app
 
 COPY ./koreajc.py /app/koreajc.py
 
-ENTRYPOINT ["/usr/bin/python3", "/app/koreajc.py"]
+ENTRYPOINT ["/usr/local/bin/python3", "/app/koreajc.py"]
 
