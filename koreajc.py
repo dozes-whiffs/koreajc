@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import html
 import re
 import requests
+import json
 from getpass import getpass
 
 
@@ -33,21 +34,10 @@ def get_login_csrf(session: requests.Session) -> str:
     return csrf
 
 
-def login(session: requests.Session, tid: str, tpwd: str) -> bool:
+def post_login(session: requests.Session, payload: dict) -> dict:
     """
-    로그인 수행
+    로그인 POST 공통 함수 (JSON 응답 반환)
     """
-    csrf_token = get_login_csrf(session)
-
-    payload = {
-        "tid": tid,
-        "tpwd": tpwd,
-        "save_id": "",
-        "captcha": "",
-        "csrft": csrf_token,
-        "ajax": "y",
-    }
-
     headers = {
         "Referer": LOGIN_PAGE_URL,
         "X-Requested-With": "XMLHttpRequest",
@@ -61,14 +51,39 @@ def login(session: requests.Session, tid: str, tpwd: str) -> bool:
     )
     resp.raise_for_status()
 
-    # 사이트가 ajax 응답을 쓰므로 문자열 기준 판별
-    # (필요 시 실제 응답에 맞게 조정)
-    print(resp.ok);
-    #if "success" in resp.text.lower() or resp.text.strip() == "1":
-    if resp.ok == True:
-        return True
+    return resp.json()
 
-    return False
+
+def login(session: requests.Session, tid: str, tpwd: str) -> bool:
+    csrf_token = get_login_csrf(session)
+
+    payload = {
+        "tid": tid,
+        "tpwd": tpwd,
+        "save_id": "",
+        "captcha": "",
+        "csrft": csrf_token,
+        "ajax": "y",
+    }
+
+    # ---- 1차 로그인 시도 ----
+    result = post_login(session, payload)
+    code = result.get("code")
+    okco = result.get("ok")
+
+    # ---- CAPTCHA 요구 ----
+    if code == "CAPTCHA_FAIL":
+        print("CAPTCHA 로그인 필요")
+
+        payload["captcha"] = result.get("captchaCode")
+
+        # ---- CAPTCHA 포함 재시도 ----
+        result = post_login(session, payload)
+        code = result.get("code")
+        okco = result.get("ok")
+
+    # ---- 성공 여부 판단 ----
+    return okco == True
 
 
 def extract_csrf_token(html_text: str) -> str | None:
