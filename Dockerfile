@@ -1,10 +1,9 @@
 FROM python:3.10.19-slim-bookworm
 
-
 ENV RUN_DOCKER=1
 
 RUN mkdir -p /app && \
-    pip install requests beautifulsoup4 py_mini_racer
+    pip install requests beautifulsoup4 quickjs
 
 WORKDIR /app
 
