@@ -5,6 +5,7 @@
 git clone https://github.com/dozes-whiffs/koreajc
 cd koreajc
 docker buildx build -t koreajc --load .
+(or) docker build -t koreajc --load .
 docker run -it --rm koreajc <ID> <PW>
 ```
 
