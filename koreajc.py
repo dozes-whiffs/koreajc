@@ -9,7 +9,8 @@ import signal
 import os
 import sys
 from getpass import getpass
-from py_mini_racer import py_mini_racer
+# from py_mini_racer import py_mini_racer
+import quickjs
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
@@ -191,7 +192,8 @@ def extract_server_data(html: str) -> dict:
 
     js_code = match.group(0)
 
-    ctx = py_mini_racer.MiniRacer()
+    #ctx = py_mini_racer.MiniRacer()
+    ctx = quickjs.Context()
     ctx.eval("var window = {};")
     ctx.eval(js_code)
 
@@ -277,7 +279,7 @@ def run_update_process(
     current = select_first_unfinished_chapter(curriculum_summary)
 
     if not current:
-        print("모든 챕터가 이미 100% 완료 상태입니다.")
+        print(f"▶ {name} | 모든 챕터가 이미 100% 완료 상태입니다.")
         return
 
     chapter_index = curriculum_summary.index(current)
@@ -318,16 +320,16 @@ def run_update_process(
                     "/etc/sub_login.asp" in resp.text or
                     "먼저 로그인을 진행해주세요." in resp.text
                 ):
-                    print("로그인 해제로 인해 종료")
+                    print(f"▶ {name} | 로그인 해제로 인해 종료")
                     return
                 else:
-                    print("JSON 응답 파싱 실패, 30초 후 재시도")
+                    print(f"▶ {name} | JSON 응답 파싱 실패, 30초 후 재시도")
                     time.sleep(30)
                     continue
 
             success = result.get("success", False)
             if success == False:
-                print("f실패 → {name} | 오류 로그 확인 필요")
+                print(f"실패 → {name} | 오류 로그 확인 필요")
                 print(resp.text)
                 return
             chapter_rate = result.get("chapter_rate", 0)
@@ -339,19 +341,19 @@ def run_update_process(
             print(
                 f"UPDATE → {name} | Chapter {chapter} | "
                 f"Rate={chapter_rate}% | log_id={log_id} | "
-                f"tdateing={tdateing}"
+                f"tdateing={tdateing} | totalTime={totalTime}"
             )
 
             # ✅ 챕터 완료 조건
             if chapter_rate >= 100:
-                print(f"✔ Chapter {chapter} 완료, 다음 챕터로 이동")
+                print(f"✔  {name} | Chapter {chapter} 완료, 다음 챕터로 이동")
                 break
 
             time.sleep(30)
 
         chapter_index += 1
 
-    print("🎉 모든 챕터 업데이트 완료")
+    print(f"🎉 {name} | 모든 챕터 업데이트 완료")
 
 
 def run_course_worker(
