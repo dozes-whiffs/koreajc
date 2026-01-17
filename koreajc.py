@@ -16,7 +16,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 LOGIN_PAGE_URL = "https://koreajc.com/etc/sub_login.asp"
 LOGIN_POST_URL = "https://koreajc.com/etc/login_ok.asp"
-STUDY_ROOM_URL = "https://koreajc.com/study/studyroom.asp"
 NEW_STUDY_URL = "https://koreajc.com/study/new_study.asp"
 UPDATE_URL = "https://koreajc.com/study/api/update_progress.asp"
 
