@@ -8,9 +8,8 @@ import uuid
 import signal
 import os
 import sys
+import subprocess
 from getpass import getpass
-# from py_mini_racer import py_mini_racer
-import quickjs
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
@@ -191,13 +190,11 @@ def extract_server_data(html: str) -> dict:
 
     js_code = match.group(0)
 
-    #ctx = py_mini_racer.MiniRacer()
-    ctx = quickjs.Context()
-    ctx.eval("var window = {};")
-    ctx.eval(js_code)
-
-    # JS 객체 → JSON 문자열 → Python dict
-    json_text = ctx.eval("JSON.stringify(window.SERVER_DATA)")
+    json_text = subprocess.check_output(
+        ["node"],
+        input=f"global.window={{}};\n{js_code}\nconsole.log(JSON.stringify(window.SERVER_DATA));",
+        text=True
+    )
     return json.loads(json_text)
 
 
