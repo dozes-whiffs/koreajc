@@ -172,7 +172,7 @@ def fetch_studyroom_html(
 
     # ---- 차단 응답 무시 ----
     if is_blocked_studyroom(html):
-        print("본인인증 미완료로 수강 페이지가 차단되었습니다. (무시)")
+        print("❗ 본인인증 미완료로 수강 페이지가 차단되었습니다. (무시)")
         return None
 
     return html
@@ -275,7 +275,7 @@ def run_update_process(
     current = select_first_unfinished_chapter(curriculum_summary)
 
     if not current:
-        print(f"▶ {name} | 모든 챕터가 이미 100% 완료 상태입니다.")
+        print(f"🆗 {name} | 모든 챕터가 이미 100% 완료 상태입니다.")
         return
 
     chapter_index = curriculum_summary.index(current)
@@ -316,19 +316,17 @@ def run_update_process(
                     "/etc/sub_login.asp" in resp.text or
                     "먼저 로그인을 진행해주세요." in resp.text
                 ):
-                    print(f"▶ {name} | 로그인 해제로 인해 종료")
+                    print(f"❌ {name} | 로그인 해제로 인해 종료")
                     return
                 else:
-                    print(f"▶ {name} | JSON 응답 파싱 실패, 30초 후 재시도")
+                    print(f"❌ {name} | JSON 응답 파싱 실패, 30초 후 재시도")
                     time.sleep(30)
                     continue
 
             success = result.get("success", False)
             if success == False:
                 message = result.get("message", False)
-                print(f"실패 → {name} | 오류 로그 확인 필요")
-                print(f"▶ {name} | {message}")
-                #print(resp.text)
+                print(f"❌ 실패 → {name} | {message}")
                 return
             chapter_rate = result.get("chapter_rate", 0)
             log_id = result.get("log_id", log_id)
@@ -438,10 +436,10 @@ def main():
 
     # ---- 로그인 ----
     if not login(session, tid, tpwd):
-        print("로그인 실패")
+        print("❌ 로그인 실패")
         return
 
-    print("로그인 성공")
+    print("✔️ 로그인 성공")
 
     # ---- 이후부터는 session 유지 ----
     # 예:
@@ -460,7 +458,7 @@ def main():
     #for course in courses:
     #    print(course)
     for course in courses:
-        print(f"체크: {course['title']}")
+        print(f"ℹ️  체크: {course['title']}")
         html = fetch_studyroom_html(session, course["auth_token"], csrf_token)
         if not html:
             continue
