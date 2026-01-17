@@ -33,4 +33,4 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm/v7,linux/arm64/v8,linux/s390x
           push: true
-          tags: ${{ vars.DOCKER_IMAGE_NAME }}/koreajc:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_NAME }}:latest
