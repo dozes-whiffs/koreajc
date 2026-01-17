@@ -1,12 +1,16 @@
 # koreajc skip
 
 ## Docker (Pre-built image)
+
+### Recommended
+
 ```sh
 docker pull wiki0n/koreajc
 docker run -it --rm wiki0n/koreajc <ID> <PW>
 ```
 
 ## Docker (Build)
+
 ```sh
 git clone https://github.com/dozes-whiffs/koreajc
 cd koreajc
@@ -16,8 +20,11 @@ docker run -it --rm koreajc <ID> <PW>
 ```
 
 ## Shell
+
 This method requires a Node.js program.
+
 The following is an example based on Ubuntu.
+
 It is recommended to use a container-based approach whenever possible.
 
 ```sh
