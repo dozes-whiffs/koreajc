@@ -16,8 +16,13 @@ docker run -it --rm koreajc <ID> <PW>
 ```
 
 ## Shell
+This method requires a Node.js program.
+The following is an example based on Ubuntu.
+It is recommended to use a container-based approach whenever possible.
+
 ```sh
-python3 -m pip install requests beautifulsoup4 py_mini_racer
+apt update && apt install nodejs
+python3 -m pip install requests beautifulsoup4
 python3 koreajc.py <ID> <PW>
 ```
 
