@@ -430,6 +430,11 @@ def main():
     signal.signal(signal.SIGINT, force_exit)
     session = requests.Session()
 
+    # 전역변수 설정
+    session.headers.update({
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+    })
+
     # ---- 사용자 입력 ----
     #tid = input("아이디: ").strip()
     #tpwd = getpass("비밀번호: ")
