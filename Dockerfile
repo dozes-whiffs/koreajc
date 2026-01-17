@@ -3,6 +3,9 @@ FROM python:3.10.19-slim-bookworm
 ENV RUN_DOCKER=1
 
 RUN mkdir -p /app && \
+    apt update && \
+    apt install -y --no-install-recommends build-essential && \
+    rm -rf /var/lib/{apt,dpkg,cache,log}/ && \
     pip install requests beautifulsoup4 quickjs
 
 WORKDIR /app
