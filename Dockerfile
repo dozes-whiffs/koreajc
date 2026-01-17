@@ -4,7 +4,7 @@ ENV RUN_DOCKER=1
 
 RUN mkdir -p /app && \
     apt update && \
-    apt install -y --no-install-recommends build-essential && \
+    apt install -y --no-install-recommends gcc libc6-dev && \
     rm -rf /var/lib/{apt,dpkg,cache,log}/ && \
     pip install requests beautifulsoup4 quickjs
 
