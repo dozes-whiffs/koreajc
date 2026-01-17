@@ -439,7 +439,7 @@ def main():
         print("❌ 로그인 실패")
         return
 
-    print("✔️ 로그인 성공")
+    print("✔ 로그인 성공")
 
     # ---- 이후부터는 session 유지 ----
     # 예:
@@ -458,7 +458,7 @@ def main():
     #for course in courses:
     #    print(course)
     for course in courses:
-        print(f"ℹ️  체크: {course['title']}")
+        print(f"ℹ️ 체크: {course['title']}")
         html = fetch_studyroom_html(session, course["auth_token"], csrf_token)
         if not html:
             continue
