@@ -325,8 +325,10 @@ def run_update_process(
 
             success = result.get("success", False)
             if success == False:
+                message = result.get("message", False)
                 print(f"실패 → {name} | 오류 로그 확인 필요")
-                print(resp.text)
+                print(f"▶ {name} | {message}")
+                #print(resp.text)
                 return
             chapter_rate = result.get("chapter_rate", 0)
             log_id = result.get("log_id", log_id)
