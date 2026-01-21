@@ -15,6 +15,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 LOGIN_PAGE_URL = "https://koreajc.com/etc/sub_login.asp"
 LOGIN_POST_URL = "https://koreajc.com/etc/login_ok.asp"
+STUDY_ROOM_URL = "https://koreajc.com/study/studyroom.asp"
 NEW_STUDY_URL = "https://koreajc.com/study/new_study.asp"
 UPDATE_URL = "https://koreajc.com/study/api/update_progress.asp"
 
@@ -430,7 +431,7 @@ def main():
     signal.signal(signal.SIGINT, force_exit)
     session = requests.Session()
 
-    # 전역변수 설정
+    # ---- 전역변수 설정 ----
     session.headers.update({
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
     })
@@ -445,19 +446,14 @@ def main():
         return
 
     print("✔ 로그인 성공")
+    print("강의 데이터를 받아오는 중...")
 
-    # ---- 이후부터는 session 유지 ----
-    # 예:
-    # resp = session.get("https://koreajc.com/xxx")
-    # html_text = resp.text
-    # courses = parse_course_cards(html_text)
-    resp = session.get("https://koreajc.com/study/studyroom.asp")
+    resp = session.get(STUDY_ROOM_URL)
     html_text = resp.text
     csrf_token = extract_csrf_token(html_text)
     courses = parse_course_cards(html_text)
     course_jobs = []
 
-    print("CSRF TOKEN:", csrf_token)
     print("-" * 40)
 
     #for course in courses:
