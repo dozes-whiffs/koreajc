@@ -9,6 +9,7 @@ import signal
 import os
 import sys
 import subprocess
+import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from requests.adapters import HTTPAdapter
 
@@ -19,6 +20,14 @@ LOGIN_POST_URL = "https://koreajc.com/etc/login_ok.asp"
 STUDY_ROOM_URL = "https://koreajc.com/study/studyroom.asp"
 NEW_STUDY_URL = "https://koreajc.com/study/new_study.asp"
 UPDATE_URL = "https://koreajc.com/study/api/update_progress.asp"
+
+PRINT_LOCK = threading.Lock()
+
+
+def safe_print(*args, **kwargs):
+    kwargs.setdefault("flush", True)
+    with PRINT_LOCK:
+        print(*args, **kwargs)
 
 
 def configure_session(session: requests.Session) -> requests.Session:
@@ -35,7 +44,7 @@ def clone_session(base_session: requests.Session) -> requests.Session:
     return cloned
 
 def force_exit(sig, frame):
-    print("Ctrl+C 가 감지되어 강제로 종료합니다.")
+    safe_print("Ctrl+C 가 감지되어 강제로 종료합니다.")
     os._exit(1)
 
 
@@ -101,7 +110,7 @@ def login(session: requests.Session, tid: str, tpwd: str) -> bool:
 
     # ---- CAPTCHA 요구 ----
     if code == "CAPTCHA_FAIL":
-        print("CAPTCHA 로그인 필요")
+        safe_print("CAPTCHA 로그인 필요")
 
         payload["captcha"] = result.get("captchaCode")
 
@@ -187,7 +196,7 @@ def fetch_studyroom_html(
 
     # ---- 차단 응답 무시 ----
     if is_blocked_studyroom(html):
-        print("❗ 본인인증 미완료로 수강 페이지가 차단되었습니다. (무시)")
+        safe_print("❗ 본인인증 미완료로 수강 페이지가 차단되었습니다. (무시)")
         return None
 
     return html
@@ -290,7 +299,7 @@ def run_update_process(
     current = select_first_unfinished_chapter(curriculum_summary)
 
     if not current:
-        print(f"🆗 {name} | 모든 챕터가 이미 100% 완료 상태입니다.")
+        safe_print(f"🆗 {name} | 모든 챕터가 이미 100% 완료 상태입니다.")
         return
 
     chapter_index = curriculum_summary.index(current)
@@ -301,7 +310,7 @@ def run_update_process(
         chapter = chapter_info["chapter"]
         page = chapter_info["page"]
 
-        print(f"▶ 챕터 시작: {name} / Chapter {chapter} / Page {page}")
+        safe_print(f"▶ 챕터 시작: {name} / Chapter {chapter} / Page {page}")
 
         log_id = 0
         instance_id = str(uuid.uuid4())
@@ -331,17 +340,17 @@ def run_update_process(
                     "/etc/sub_login.asp" in resp.text or
                     "먼저 로그인을 진행해주세요." in resp.text
                 ):
-                    print(f"❌ {name} | 로그인 해제로 인해 종료")
+                    safe_print(f"❌ {name} | 로그인 해제로 인해 종료")
                     return
                 else:
-                    print(f"❌ {name} | JSON 응답 파싱 실패, 30초 후 재시도")
+                    safe_print(f"❌ {name} | JSON 응답 파싱 실패, 30초 후 재시도")
                     time.sleep(30)
                     continue
 
             success = result.get("success", False)
             if success == False:
                 message = result.get("message", False)
-                print(f"❌ 실패 → {name} | {message}")
+                safe_print(f"❌ 실패 → {name} | {message}")
                 return
             chapter_rate = result.get("chapter_rate", 0)
             log_id = result.get("log_id", log_id)
@@ -349,7 +358,7 @@ def run_update_process(
             tdateing = result.get("tdateing", 0)
             studyTime += 30
 
-            print(
+            safe_print(
                 f"UPDATE → {name} | Chapter {chapter} | "
                 f"Rate={chapter_rate}% | log_id={log_id} | "
                 f"tdateing={tdateing} | totalTime={totalTime}"
@@ -357,14 +366,14 @@ def run_update_process(
 
             # ✅ 챕터 완료 조건
             if chapter_rate >= 100:
-                print(f"✔  {name} | Chapter {chapter} 완료, 다음 챕터로 이동")
+                safe_print(f"✔  {name} | Chapter {chapter} 완료, 다음 챕터로 이동")
                 break
 
             time.sleep(30)
 
         chapter_index += 1
 
-    print(f"🎉 {name} | 모든 챕터 업데이트 완료")
+    safe_print(f"🎉 {name} | 모든 챕터 업데이트 완료")
 
 
 def run_course_worker(
@@ -427,16 +436,16 @@ def run_multi_courses(course_jobs: list[dict], max_workers: int = 3):
             try:
                 future.result()
             except Exception as e:
-                print("스레드 실행 중 오류:", e)
+                safe_print("스레드 실행 중 오류:", e)
 
 
 def main():
     # 아이디는 이렇게 받도록 진행 
     if len(sys.argv) < 3:
         if os.getenv("RUN_DOCKER") == "1":
-            print("Usage: docker run -it --rm koreajc <ID> <PW>")
+            safe_print("Usage: docker run -it --rm koreajc <ID> <PW>")
         else:
-            print(f"Usage: python3 {sys.argv[0]} <ID> <PW>")
+            safe_print(f"Usage: python3 {sys.argv[0]} <ID> <PW>")
         sys.exit(1)
 
     tid = sys.argv[1]
@@ -456,11 +465,11 @@ def main():
 
     # ---- 로그인 ----
     if not login(session, tid, tpwd):
-        print("❌ 로그인 실패")
+        safe_print("❌ 로그인 실패")
         return
 
-    print("✔ 로그인 성공")
-    print("강의 데이터를 받아오는 중...")
+    safe_print("✔ 로그인 성공")
+    safe_print("강의 데이터를 받아오는 중...")
 
     resp = session.get(STUDY_ROOM_URL)
     html_text = resp.text
@@ -468,12 +477,12 @@ def main():
     courses = parse_course_cards(html_text)
     course_jobs = []
 
-    print("-" * 40)
+    safe_print("-" * 40)
 
     #for course in courses:
-    #    print(course)
+    #    safe_print(course)
     for course in courses:
-        print(f"ℹ️ 체크: {course['title']}")
+        safe_print(f"ℹ️ 체크: {course['title']}")
         html = fetch_studyroom_html(session, course["auth_token"], csrf_token)
         if not html:
             continue
