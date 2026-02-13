@@ -20,18 +20,7 @@ docker run -it --rm koreajc <ID> <PW>
 ```
 
 
-### Build optimization tips
 
-```sh
-# BuildKit cache speeds up repeat builds
-docker buildx build \
-  --cache-from type=local,src=.buildx-cache \
-  --cache-to type=local,dest=.buildx-cache-new,mode=max \
-  -t koreajc --load .
-
-# rotate cache dir
-rm -rf .buildx-cache && mv .buildx-cache-new .buildx-cache
-```
 
 ## Shell
 
