@@ -9,8 +9,9 @@ import signal
 import os
 import sys
 import subprocess
-from getpass import getpass
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from requests.adapters import HTTPAdapter
+
 
 
 LOGIN_PAGE_URL = "https://koreajc.com/etc/sub_login.asp"
@@ -19,6 +20,19 @@ STUDY_ROOM_URL = "https://koreajc.com/study/studyroom.asp"
 NEW_STUDY_URL = "https://koreajc.com/study/new_study.asp"
 UPDATE_URL = "https://koreajc.com/study/api/update_progress.asp"
 
+
+def configure_session(session: requests.Session) -> requests.Session:
+    adapter = HTTPAdapter(pool_connections=20, pool_maxsize=20)
+    session.mount("https://", adapter)
+    session.mount("http://", adapter)
+    return session
+
+
+def clone_session(base_session: requests.Session) -> requests.Session:
+    cloned = configure_session(requests.Session())
+    cloned.headers.update(base_session.headers)
+    cloned.cookies.update(base_session.cookies)
+    return cloned
 
 def force_exit(sig, frame):
     print("Ctrl+C 가 감지되어 강제로 종료합니다.")
@@ -399,7 +413,7 @@ def run_multi_courses(course_jobs: list[dict], max_workers: int = 3):
             futures.append(
                 executor.submit(
                     run_course_worker,
-                    course["session"],
+                    clone_session(course["session"]),
                     course["name"],
                     course["curriculum"],
                     course["lecturenum"],
@@ -429,7 +443,7 @@ def main():
     tpwd = sys.argv[2]
 
     signal.signal(signal.SIGINT, force_exit)
-    session = requests.Session()
+    session = configure_session(requests.Session())
 
     # ---- 전역변수 설정 ----
     session.headers.update({
